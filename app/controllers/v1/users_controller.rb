@@ -13,19 +13,30 @@ module V1
       end
     end
 
+    def search
+      @user         = User.find_by_id(params[:user_id])
+      ignored_users = @user.companion_links.pluck(:companion_id) + [@user.id]
+      @users        = User.where('username ILIKE ?', "%#{params[:keyword]}%") #.where.not(id: ignored_users)
+      if @users
+        render 'v1/users/index', status: :created
+      else
+        render json: { status: 'Users not found' }, status: :not_found
+      end
+    end
+
     def show
       @user = User.find_by_id(params[:user_id])
       if @user
-        render 'users/create', status: :ok
+        render 'v1/users/show', status: :ok
       else
         render json: { status: 'User not found' }, status: :not_found
       end
     end
 
     def current_user
-      @user = User.find_by_email(params[:user][:email])
-      if @user && user.authenticate(params[:user][:password])
-        render 'users/create', status: :ok
+      @user = User.find_by_username(params['username'])
+      if @user && @user.authenticate(params['password'])
+        render 'v1/users/create', status: :ok
       else
         render json: { status: 'User not found' }, status: :not_found
       end
@@ -34,7 +45,7 @@ module V1
     private
 
     def user_params
-      params.require(:user).permit(:name, :email, :password, :password_confirmation)
+      params.require(:user).permit(:username, :password, :password_confirmation)
     end
   end
 end

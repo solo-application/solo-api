@@ -11,15 +11,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160416045904) do
+ActiveRecord::Schema.define(version: 20160416084335) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "uuid-ossp"
 
-  create_table "users", force: :cascade do |t|
-    t.string   "name"
-    t.string   "phone"
-    t.string   "email"
+  create_table "links", force: :cascade do |t|
+    t.uuid     "traveller_id"
+    t.uuid     "companion_id"
+    t.boolean  "match_confirmed", default: false
+    t.datetime "created_at",                      null: false
+    t.datetime "updated_at",                      null: false
+  end
+
+  add_index "links", ["companion_id"], name: "index_links_on_companion_id", using: :btree
+  add_index "links", ["traveller_id"], name: "index_links_on_traveller_id", using: :btree
+
+  create_table "users", id: :uuid, default: "uuid_generate_v4()", force: :cascade do |t|
+    t.string   "username"
     t.string   "password_digest"
     t.datetime "created_at",      null: false
     t.datetime "updated_at",      null: false
