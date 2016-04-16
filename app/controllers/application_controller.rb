@@ -4,23 +4,14 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :null_session
 
   def current_user
-    @user_session ||= Session.find_by_session_token(retrieve_session_token)
+    @user ||= User.find_by_id(params[:user_id])
 
-    return @user_session.user if @user_session
+    return @user if @user
     nil
   end
 
   def validate_user
     return true if current_user
     render json: { status: "User doesn't have permissions for this request" }, status: :unauthorized
-  end
-
-  private
-
-  def retrieve_session_token
-    if request.headers['Authorization']
-      return request.headers['Authorization'].split(' ').last
-    end
-    nil
   end
 end
